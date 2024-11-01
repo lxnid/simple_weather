@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FaLocationDot } from "react-icons/fa6";
 import { TiWeatherDownpour } from "react-icons/ti";
-import currentLocation from "./current";
+import getCurrentLocation from "./current"
 
 const API_URL = "http://127.0.0.1:8000/api"; // Adjust if deployed
 
@@ -10,11 +10,43 @@ function App() {
 	const [error, setError] = useState(null);
 	const [location, setLocation] = useState("");
 
-	
+// 	const [imageUrl, setImageUrl] = useState('');
+//   const [error, setError] = useState(null);
+
+// //   useEffect(() => {
+// //     const fetchRandomImage = async () => {
+// //       try {
+// //         const response = await fetch(`https://api.unsplash.com/photos/random?query=${keyword}&client_id=<YOUR_ACCESS_KEY>`);
+        
+// //         if (!response.ok) {
+// //           throw new Error('Network response was not ok');
+// //         }
+
+// //         const data = await response.json();
+// //         setImageUrl(data.urls.regular); // Use 'regular' size image
+// //       } catch (error) {
+// //         setError(error.message);
+// //       }
+// //     };
+
+// //     fetchRandomImage();
+// //   }, [keyword]);
 
 	useEffect(() => {
-		// Fetch initial weather data with a default location
-		fetchWeatherData("Colombo");
+		// Fetch initial weather data with the user's current location
+		async function fetchInitialWeather() {
+			try {
+				const currentLocation = await getCurrentLocation();
+				setLocation(currentLocation); // Set the location state
+				fetchWeatherData(currentLocation); // Fetch weather data using current location
+				setLocation("")
+			} catch (error) {
+				console.error("Error retrieving current location:", error);
+				// Fallback to a default location if geolocation fails
+				fetchWeatherData("Colombo");
+			}
+		}
+		fetchInitialWeather();
 	}, []);
 
 	const fetchWeatherData = async (location) => {
@@ -90,7 +122,8 @@ function App() {
 									</div>
 								</div>
 								<div className="flex flex-col gap-10">
-									<TiWeatherDownpour className="text-9xl" />
+									{/* <TiWeatherDownpour className="text-9xl" /> */}
+									<img src={weatherData.current.condition.icon} className="w-auto"/>
 									<div className="flex flex-col gap-2">
 										<h1 className="text-5xl font-black tracking-wider">
 											{weatherData.current.temp_c}
