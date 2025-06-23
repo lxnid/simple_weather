@@ -54,19 +54,14 @@ function App() {
 		const url = `${API_URL}/fetch_weather_data?location=${encodeURIComponent(location)}`;
 		try {
 			const response = await fetch(url, {
-				method: "GET",
-				headers: {
-					"Content-Type": "application/json",
-				},
+				method: "GET"
 			});
-
 			if (!response.ok) {
-				const errorText = await response.text(); // Read the error message from the response body
+				const errorText = await response.text();
 				throw new Error(`Network response was not ok: ${errorText}`);
 			}
-
 			const data = await response.json();
-			setWeatherData(data); // Update the weather data state
+			setWeatherData(data);
 			setError(null);
 			console.log(data);
 		} catch (err) {
@@ -99,7 +94,7 @@ function App() {
 	return (
 		<div className="w-full h-screen flex justify-center items-center">
 			<div className="lg:w-[70%] w-[90%] h-[80vh] flex flex-col lg:flex-row justify-center items-center">
-				{error && <div className="text-red-500">Error: {error}</div>}
+				{/* {error && <div className="text-red-500">Error: {error}</div>} */}
 
 				{weatherData ? (
 					<>

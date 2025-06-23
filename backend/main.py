@@ -8,13 +8,7 @@ import os
 app = FastAPI()
 
 # Enable CORS for requests from React app
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["https://lxnid.github.io/simple_weather/"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app.add_middleware( CORSMiddleware, allow_origins=["https://lxnid.github.io/simple_weather/", "http://localhost:3000"], allow_credentials=True, allow_methods=["GET", "POST", "OPTIONS"], allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept"] )
 
 class Address:
     def __init__(self,region:str,country:str):
@@ -53,11 +47,15 @@ def get_location(location):
 
     response = requests.get(URL, params=params)
 
-    data = Address(
-        region=response.json()["data"][0]["region"],
-        country=response.json()["data"][0]["country"],
-    )
-    return f"{data.region}, {data.country}"
+    json_data = response.json()
+    if "data" in json_data and json_data["data"] and len(json_data["data"]) > 0:
+        data = Address(
+            region=json_data["data"][0]["region"],
+            country=json_data["data"][0]["country"],
+        )
+        return f"{data.region}, {data.country}"
+    else:
+        raise HTTPException(status_code=404, detail="Location not found. Please check your input.")
 
 
 @app.get("/api/fetch_weather_data")
