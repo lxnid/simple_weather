@@ -8,7 +8,7 @@ import os
 app = FastAPI()
 
 # Enable CORS for requests from React app
-app.add_middleware( CORSMiddleware, allow_origins=["https://lxnid.github.io/simple_weather/", "http://localhost:3000"], allow_credentials=True, allow_methods=["GET", "POST", "OPTIONS"], allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept"] )
+app.add_middleware( CORSMiddleware, allow_origins=["https://lxnid.github.io/simple_weather/","https://lxnid.github.io", "http://localhost:3000"], allow_credentials=True, allow_methods=["GET", "POST", "OPTIONS"], allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept"] )
 
 class Address:
     def __init__(self,region:str,country:str):
