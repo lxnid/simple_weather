@@ -3,7 +3,8 @@ import { FaLocationDot } from "react-icons/fa6";
 import { TiWeatherDownpour } from "react-icons/ti";
 import getCurrentLocation from "./current"
 
-const API_URL = "http://127.0.0.1:8000/api"; // Adjust if deployed
+// const API_URL = "http://127.0.0.1:8000/api"; 
+const API_URL = "https://simple-weather-868c.onrender.com/api"; 
 
 function App() {
 	const [weatherData, setWeatherData] = useState(null);
