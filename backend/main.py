@@ -2,6 +2,8 @@ import json
 import requests
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+import os
 
 app = FastAPI()
 
@@ -44,7 +46,8 @@ class Address:
 
 
 def get_location(location):
-    API_key = "a415f82f7c4f110e7872f1474334797f"
+    load_dotenv()
+    API_key = os.getenv("POSITIONSTACK_API_KEY")
     URL = "http://api.positionstack.com/v1/reverse"
     params = {"access_key": API_key, "query":location.replace("%:%", ","), "limit":1}
 
@@ -63,7 +66,8 @@ async def fetch_weather_data(location="paris"):
         temp_location = get_location(location)
     else:
         temp_location = location
-    API_key = "19bb1f0415cd489892d145152242810"
+    load_dotenv()
+    API_key = os.getenv("WEATHERAPI_KEY")
     URL = "http://api.weatherapi.com/v1/current.json"
     params = {"key": API_key, "q": f"{temp_location}"}
 
