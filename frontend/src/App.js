@@ -115,17 +115,21 @@ function App() {
 	});
 
 	return (
-		<div className="w-full min-h-screen flex justify-center items-center bg-gradient-to-br from-blue-50 via-white to-blue-50 py-8 md:py-12">
-			<div className="w-[95%] sm:w-[90%] max-w-2xl flex flex-col gap-8 animate-fade-in">
+		<div className="w-full min-h-screen bg-gray-50 py-8 px-4 md:px-8">
+			<div className="max-w-[90vw] mx-auto animate-fade-in">
 				{loading && !weatherData ? (
 					<LoadingSpinner />
 				) : error && !weatherData ? (
 					<ErrorDisplay error={error} onRetry={handleRetryDefault} />
 				) : weatherData ? (
 					<>
-						<div className="flex flex-col gap-7">
-							{/* Search Bar */}
-							<div className="px-6 md:px-8 py-6 md:py-7 bg-white rounded-2xl shadow-md border border-blue-100 hover:border-blue-200 transition-colors duration-300">
+						{/* Header */}
+						<div className="mb-8 flex justify-between items-start">
+							<div>
+								<h1 className="text-2xl font-semibold text-gray-800 mb-1">Weather Dashboard</h1>
+								<p className="text-gray-500 text-sm">{dayName}, {formattedDate}</p>
+							</div>
+							<div className="w-full max-w-md">
 								<SearchBar
 									location={location}
 									onChange={handleLocationChange}
@@ -134,23 +138,22 @@ function App() {
 									loading={loading}
 								/>
 							</div>
+						</div>
 
-							{/* Weather Card */}
-							<div className="w-full">
+						{/* Main Layout */}
+						<div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+							{/* Left Column - Main weather + Metrics */}
+							<div className="lg:col-span-3 space-y-6">
 								<WeatherCard
 									weatherData={weatherData}
 									dayName={dayName}
 									formattedDate={formattedDate}
 								/>
-							</div>
-
-							{/* Weather Details */}
-							<div className="w-full bg-white rounded-2xl p-6 md:p-8 shadow-md border border-blue-100">
 								<MetricsPanel weatherData={weatherData} />
 							</div>
 
-							{/* Forecast */}
-							<div className="w-full bg-white rounded-2xl p-6 md:p-8 shadow-md border border-blue-100 pb-10">
+							{/* Right Column - Forecast */}
+							<div className="lg:col-span-1">
 								<ForecastPanel weatherData={weatherData} />
 							</div>
 						</div>

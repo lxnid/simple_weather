@@ -1,33 +1,18 @@
-import React from "react";
-
-function ForecastCard({ day }) {
+function ForecastCard({ dayName, date, icon, condition, highTemp, lowTemp }) {
 	return (
-		<div className="flex flex-col gap-3 p-5 bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border border-blue-100 animate-fade-in group">
-			<div className="text-center">
-				<p className="font-bold text-gray-800 text-lg group-hover:text-blue-600 transition-colors">{day.date}</p>
-				<p className="text-xs text-gray-500 mt-1">{day.day}</p>
-			</div>
-
-			<div className="flex justify-center py-2">
-				<img
-					src={day.condition.icon}
-					alt={day.condition.text}
-					className="w-20 h-20 drop-shadow-lg group-hover:scale-110 transition-transform duration-300"
-				/>
-			</div>
-
-			<p className="text-xs text-center text-gray-600 font-medium min-h-8 leading-tight">{day.condition.text}</p>
-
-			<div className="flex justify-center gap-6 mt-2 pt-3 border-t border-blue-100">
-				<div className="text-center">
-					<p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">High</p>
-					<p className="font-bold text-lg text-blue-600 mt-1">{day.maxtemp_c}°</p>
+		<div className="group flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl transition-all duration-300 cursor-pointer hover:shadow-md hover:scale-[1.02] border border-transparent hover:border-gray-200">
+			<div className="flex items-center gap-4">
+				<div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center group-hover:bg-white group-hover:scale-110 transition-all duration-300">
+					<img src={icon} alt={condition} className="w-8 h-8 group-hover:scale-110 transition-transform duration-300" />
 				</div>
-				<div className="w-px bg-blue-200"></div>
-				<div className="text-center">
-					<p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Low</p>
-					<p className="font-bold text-lg text-blue-400 mt-1">{day.mintemp_c}°</p>
+				<div>
+					<p className="text-gray-800 font-medium group-hover:text-slate-700 transition-colors duration-200">{dayName}</p>
+					<p className="text-gray-500 text-sm group-hover:text-gray-600 transition-colors duration-200">{date}</p>
 				</div>
+			</div>
+			<div className="text-right">
+				<p className="text-gray-800 font-semibold group-hover:text-slate-700 transition-colors duration-200">{highTemp}° / {lowTemp}°</p>
+				<p className="text-gray-500 text-sm capitalize group-hover:text-gray-600 transition-colors duration-200">{condition}</p>
 			</div>
 		</div>
 	);
@@ -41,33 +26,24 @@ function ForecastPanel({ weatherData }) {
 	const forecastDays = weatherData.forecast.forecastday;
 
 	return (
-		<div className="w-full">
-			<h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent mb-6 animate-slide-down">
-				3-Day Outlook
-			</h2>
-			<div className="grid grid-cols-3 gap-4 w-full">
-				{forecastDays.map((dayData, index) => {
+		<div className="w-full bg-white rounded-3xl shadow-sm p-6 animate-fade-in hover:shadow-lg transition-shadow duration-300">
+			<h2 className="text-gray-800 text-lg font-semibold mb-4">3-Day Forecast</h2>
+			<div className="space-y-2">
+				{forecastDays.map((dayData) => {
 					const date = new Date(dayData.date);
-					const dayName = date.toLocaleDateString("en-US", {
-						weekday: "short",
-					});
+					const dayName = date.toLocaleDateString("en-US", { weekday: "long" });
+					const dateStr = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
 					return (
-						<div
+						<ForecastCard
 							key={dayData.date}
-							className="animate-slide-left"
-							style={{ animationDelay: `${index * 50}ms` }}
-						>
-							<ForecastCard
-								day={{
-									date: dayName,
-									day: dayData.date,
-									condition: dayData.day.condition,
-									maxtemp_c: Math.round(dayData.day.maxtemp_c),
-									mintemp_c: Math.round(dayData.day.mintemp_c),
-								}}
-							/>
-						</div>
+							dayName={dayName}
+							date={dateStr}
+							icon={dayData.day.condition.icon}
+							condition={dayData.day.condition.text}
+							highTemp={Math.round(dayData.day.maxtemp_c)}
+							lowTemp={Math.round(dayData.day.mintemp_c)}
+						/>
 					);
 				})}
 			</div>
