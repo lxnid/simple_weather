@@ -101,8 +101,8 @@ async def fetch_weather_data(location: str = "paris"):
     if len(location) > 200:
         raise HTTPException(status_code=400, detail="Location parameter too long")
 
-    # Check cache first
-    cache_key = location.lower()
+    # Check cache first (with version prefix to invalidate old current.json responses)
+    cache_key = f"v2:{location.lower()}"
     if cache_key in weather_cache:
         return weather_cache[cache_key]
 

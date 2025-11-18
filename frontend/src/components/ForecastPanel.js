@@ -35,7 +35,7 @@ function ForecastPanel({ weatherData }) {
 			<h2 className="text-xl font-bold text-neutral-700 mb-4 animate-slide-down">
 				5-Day Forecast
 			</h2>
-			<div className="grid grid-cols-5 gap-3 w-full">
+			<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 w-full">
 				{weatherData.forecast.forecastday.map((dayData, index) => {
 					const date = new Date(dayData.date);
 					const dayName = date.toLocaleDateString("en-US", {
