@@ -115,15 +115,17 @@ function App() {
 	});
 
 	return (
-		<div className="w-full min-h-screen flex justify-center items-center bg-white py-8">
-			<div className="w-[90%] max-w-4xl flex flex-col gap-8 animate-fade-in">
+		<div className="w-full min-h-screen flex justify-center items-center bg-gradient-to-br from-blue-50 via-white to-blue-50 py-8 md:py-12">
+			<div className="w-[95%] sm:w-[90%] max-w-2xl flex flex-col gap-8 animate-fade-in">
 				{loading && !weatherData ? (
 					<LoadingSpinner />
 				) : error && !weatherData ? (
 					<ErrorDisplay error={error} onRetry={handleRetryDefault} />
 				) : weatherData ? (
 					<>
-						<div className="flex flex-col gap-6">
+						<div className="flex flex-col gap-7">
+							{/* Search Bar */}
+							<div className="px-6 md:px-8 py-6 md:py-7 bg-white rounded-2xl shadow-md border border-blue-100 hover:border-blue-200 transition-colors duration-300">
 								<SearchBar
 									location={location}
 									onChange={handleLocationChange}
@@ -131,7 +133,9 @@ function App() {
 									error={error}
 									loading={loading}
 								/>
+							</div>
 
+							{/* Weather Card */}
 							<div className="w-full">
 								<WeatherCard
 									weatherData={weatherData}
@@ -140,11 +144,13 @@ function App() {
 								/>
 							</div>
 
-							<div className="w-full bg-neutral-200 rounded-3xl p-8 shadow-lg">
+							{/* Weather Details */}
+							<div className="w-full bg-white rounded-2xl p-6 md:p-8 shadow-md border border-blue-100">
 								<MetricsPanel weatherData={weatherData} />
 							</div>
 
-							<div className="w-full bg-neutral-200 rounded-3xl p-8 shadow-lg">
+							{/* Forecast */}
+							<div className="w-full bg-white rounded-2xl p-6 md:p-8 shadow-md border border-blue-100 pb-10">
 								<ForecastPanel weatherData={weatherData} />
 							</div>
 						</div>

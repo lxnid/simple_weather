@@ -2,23 +2,31 @@ import React from "react";
 
 function ForecastCard({ day }) {
 	return (
-		<div className="flex flex-col gap-2 p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow animate-fade-in">
-			<p className="font-semibold text-neutral-700">{day.date}</p>
-			<p className="text-sm text-neutral-600 mb-2">{day.day}</p>
-			<img
-				src={day.condition.icon}
-				alt={day.condition.text}
-				className="w-16 h-16 mx-auto"
-			/>
-			<p className="text-xs text-center text-neutral-600">{day.condition.text}</p>
-			<div className="flex justify-between gap-2 mt-2 text-sm">
-				<div className="text-center flex-1">
-					<p className="text-xs text-neutral-500">High</p>
-					<p className="font-semibold">{day.maxtemp_c}°</p>
+		<div className="flex flex-col gap-3 p-5 bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border border-blue-100 animate-fade-in group">
+			<div className="text-center">
+				<p className="font-bold text-gray-800 text-lg group-hover:text-blue-600 transition-colors">{day.date}</p>
+				<p className="text-xs text-gray-500 mt-1">{day.day}</p>
+			</div>
+
+			<div className="flex justify-center py-2">
+				<img
+					src={day.condition.icon}
+					alt={day.condition.text}
+					className="w-20 h-20 drop-shadow-lg group-hover:scale-110 transition-transform duration-300"
+				/>
+			</div>
+
+			<p className="text-xs text-center text-gray-600 font-medium min-h-8 leading-tight">{day.condition.text}</p>
+
+			<div className="flex justify-center gap-6 mt-2 pt-3 border-t border-blue-100">
+				<div className="text-center">
+					<p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">High</p>
+					<p className="font-bold text-lg text-blue-600 mt-1">{day.maxtemp_c}°</p>
 				</div>
-				<div className="text-center flex-1">
-					<p className="text-xs text-neutral-500">Low</p>
-					<p className="font-semibold">{day.mintemp_c}°</p>
+				<div className="w-px bg-blue-200"></div>
+				<div className="text-center">
+					<p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Low</p>
+					<p className="font-bold text-lg text-blue-400 mt-1">{day.mintemp_c}°</p>
 				</div>
 			</div>
 		</div>
@@ -31,19 +39,13 @@ function ForecastPanel({ weatherData }) {
 	}
 
 	const forecastDays = weatherData.forecast.forecastday;
-	console.log(`Forecast days available: ${forecastDays.length}`, forecastDays);
 
 	return (
 		<div className="w-full">
-			<h2 className="text-xl font-bold text-neutral-700 mb-2 animate-slide-down">
-				{forecastDays.length}-Day Forecast
+			<h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent mb-6 animate-slide-down">
+				3-Day Outlook
 			</h2>
-			{forecastDays.length < 5 && (
-				<p className="text-sm text-orange-600 mb-4 font-medium">
-					⚠️ Showing {forecastDays.length} days (API tier limited)
-				</p>
-			)}
-			<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 w-full">
+			<div className="grid grid-cols-3 gap-4 w-full">
 				{forecastDays.map((dayData, index) => {
 					const date = new Date(dayData.date);
 					const dayName = date.toLocaleDateString("en-US", {
