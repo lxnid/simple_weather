@@ -114,7 +114,7 @@ function App() {
 	});
 
 	return (
-		<div className="w-full h-screen flex justify-center items-center bg-gradient-to-br from-blue-50 to-blue-100">
+		<div className="w-full h-screen flex justify-center items-center bg-white">
 			<div className="lg:w-[70%] w-[90%] lg:h-[80vh] h-[90vh] flex flex-col lg:flex-row justify-center items-center">
 				{loading && !weatherData ? (
 					<LoadingSpinner />

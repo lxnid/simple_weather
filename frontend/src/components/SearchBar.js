@@ -16,7 +16,7 @@ function SearchBar({ location, onChange, onSubmit, error, loading }) {
 				<button
 					type="submit"
 					aria-label="Search"
-					className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+					className="absolute right-2 top-1/2 transform -translate-y-1/2 text-neutral-500 p-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 					disabled={loading}
 				>
 					<FaSearch className="w-4 h-4" />
