@@ -1,50 +1,28 @@
 import React, { useEffect, useState } from "react";
 import { FaLocationDot } from "react-icons/fa6";
-import { TiWeatherDownpour } from "react-icons/ti";
-import getCurrentLocation from "./current"
+import getCurrentLocation from "./current";
 
-// const API_URL = "http://127.0.0.1:8000/api"; 
-const API_URL = "https://simple-weather-868c.onrender.com/api"; 
+const API_URL = "https://simple-weather-868c.onrender.com/api";
 
 function App() {
 	const [weatherData, setWeatherData] = useState(null);
 	const [error, setError] = useState(null);
 	const [location, setLocation] = useState("");
-
-// 	const [imageUrl, setImageUrl] = useState('');
-//   const [error, setError] = useState(null);
-
-// //   useEffect(() => {
-// //     const fetchRandomImage = async () => {
-// //       try {
-// //         const response = await fetch(`https://api.unsplash.com/photos/random?query=${keyword}&client_id=<YOUR_ACCESS_KEY>`);
-        
-// //         if (!response.ok) {
-// //           throw new Error('Network response was not ok');
-// //         }
-
-// //         const data = await response.json();
-// //         setImageUrl(data.urls.regular); // Use 'regular' size image
-// //       } catch (error) {
-// //         setError(error.message);
-// //       }
-// //     };
-
-// //     fetchRandomImage();
-// //   }, [keyword]);
+	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
 		// Fetch initial weather data with the user's current location
 		async function fetchInitialWeather() {
+			setLoading(true);
 			try {
 				const currentLocation = await getCurrentLocation();
-				setLocation(currentLocation); // Set the location state
-				fetchWeatherData(currentLocation); // Fetch weather data using current location
-				setLocation("")
+				await fetchWeatherData(currentLocation);
 			} catch (error) {
 				console.error("Error retrieving current location:", error);
 				// Fallback to a default location if geolocation fails
-				fetchWeatherData("Colombo");
+				await fetchWeatherData("paris");
+			} finally {
+				setLoading(false);
 			}
 		}
 		fetchInitialWeather();
@@ -52,24 +30,28 @@ function App() {
 
 	const fetchWeatherData = async (location) => {
 		const url = `${API_URL}/fetch_weather_data?location=${encodeURIComponent(location)}`;
+		setLoading(true);
+		setError(null);
+
 		try {
 			const response = await fetch(url, {
 				method: "GET"
 			});
+
 			if (!response.ok) {
-				const errorText = await response.text();
-				throw new Error(`Network response was not ok: ${errorText}`);
+				const errorData = await response.json();
+				throw new Error(errorData.detail || "Failed to fetch weather data");
 			}
+
 			const data = await response.json();
 			setWeatherData(data);
-			setError(null);
-			console.log(data);
 		} catch (err) {
 			setError(
-				err.message ||
-					"Failed to fetch data. Check the location or network."
+				err.message || "Failed to fetch data. Check the location or network."
 			);
 			console.error("Error fetching data:", err);
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -79,8 +61,15 @@ function App() {
 
 	const handleLocationSubmit = (e) => {
 		e.preventDefault();
+
+		// Validate input is not empty
+		if (!location.trim()) {
+			setError("Please enter a location");
+			return;
+		}
+
 		fetchWeatherData(location);
-		setLocation("")
+		setLocation("");
 	};
 
 	const today = new Date();
@@ -92,11 +81,25 @@ function App() {
 	});
 
 	return (
-		<div className="w-full h-screen flex justify-center items-center">
+		<div className="w-full h-screen flex justify-center items-center bg-gradient-to-br from-blue-50 to-blue-100">
 			<div className="lg:w-[70%] w-[90%] h-[80vh] flex flex-col lg:flex-row justify-center items-center">
-				{/* {error && <div className="text-red-500">Error: {error}</div>} */}
-
-				{weatherData ? (
+				{loading && !weatherData ? (
+					<div className="flex flex-col items-center gap-4">
+						<div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
+						<p className="text-gray-600 font-medium">Loading weather data...</p>
+					</div>
+				) : error && !weatherData ? (
+					<div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
+						<h2 className="text-red-800 font-bold text-lg mb-2">Error</h2>
+						<p className="text-red-600">{error}</p>
+						<button
+							onClick={() => fetchWeatherData("paris")}
+							className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors"
+						>
+							Try Default Location
+						</button>
+					</div>
+				) : weatherData ? (
 					<>
 						<div className='w-[80%] lg:w-[50%] relative h-full hover:scale-[102%] cursor-pointer transition-transform ease-in-out duration-700 flex justify-center items-center overflow-hidden rounded-3xl bg-[url("https://images.unsplash.com/photo-1546702830-d64bd442b73f?ixid=M3w2Njk3MzB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MzAxMzA3NDR8&ixlib=rb-4.0.3")] bg-cover bg-center'>
 							<div className="relative bg-black bg-opacity-30 backdrop-blur-sm w-full h-full"></div>
@@ -118,12 +121,14 @@ function App() {
 									</div>
 								</div>
 								<div className="flex flex-col gap-10">
-									{/* <TiWeatherDownpour className="text-9xl" /> */}
-									<img src={weatherData.current.condition.icon} className="w-auto"/>
+									<img
+										src={weatherData.current.condition.icon}
+										alt={weatherData.current.condition.text}
+										className="w-24 h-24"
+									/>
 									<div className="flex flex-col gap-2">
 										<h1 className="text-5xl font-black tracking-wider">
-											{weatherData.current.temp_c}
-											°C
+											{weatherData.current.temp_c}°C
 										</h1>
 										<p className="text-base font-medium">
 											{weatherData.current.condition.text}
@@ -140,9 +145,20 @@ function App() {
 										placeholder="Change Location"
 										value={location}
 										onChange={handleLocationChange}
-										className="p-2 border border-gray-300 font-medium text-sm opacity-35 focus:opacity-100 focus:scale-105 rounded-md w-full transition-transform ease-in-out duration-500"
+										aria-label="Search for a location"
+										className="p-2 border border-gray-300 font-medium text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-md w-full transition-all ease-in-out duration-300"
 									/>
 								</form>
+								{error && (
+									<div className="mt-2 text-red-600 text-sm font-medium">
+										{error}
+									</div>
+								)}
+								{loading && (
+									<div className="mt-2 text-blue-600 text-sm font-medium">
+										Loading...
+									</div>
+								)}
 							</div>
 							<div className="flex flex-col gap-2 w-full text-xl text-neutral-500 font-semibold">
 								<div className="flex flex-row">
@@ -154,7 +170,7 @@ function App() {
 								<div className="flex flex-row">
 									<p className="flex-grow">Precipitation</p>
 									<p className="font-normal">
-										{weatherData.current.precip_mm}%
+										{weatherData.current.precip_mm} mm
 									</p>
 								</div>
 								<div className="flex flex-row">
@@ -170,7 +186,7 @@ function App() {
 									</p>
 								</div>
 								<div className="flex flex-row">
-									<p className="flex-grow">UV</p>
+									<p className="flex-grow">UV Index</p>
 									<p className="font-normal">
 										{weatherData.current.uv}
 									</p>
@@ -184,9 +200,7 @@ function App() {
 							</div>
 						</div>
 					</>
-				) : (
-					<div className="text-xs"></div>
-				)}
+				) : null}
 			</div>
 		</div>
 	);
