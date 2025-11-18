@@ -186,8 +186,8 @@ function App() {
 	});
 
 	return (
-		<div className="w-full min-h-screen flex justify-center items-center bg-gradient-to-br from-blue-50 to-blue-100 py-8">
-			<div className="lg:w-[85%] w-[95%] flex flex-col lg:flex-row justify-center items-start gap-6">
+		<div className="w-full min-h-screen flex justify-center items-center py-8">
+			<div className="w-[75%] flex flex-col justify-center items-start gap-6">
 				{loading && !weatherData ? (
 					<LoadingSpinner />
 				) : error && !weatherData ? (
@@ -195,7 +195,7 @@ function App() {
 				) : weatherData ? (
 					<>
 						{/* Weather Card Section */}
-						<div className="w-full lg:w-[40%] flex flex-col gap-4">
+						<div className="w-full flex flex-col gap-4">
 							<div className="flex items-center justify-between">
 								<LocationButton onClick={handleUseMyLocation} loading={loading} />
 								<TemperatureToggle unit={temperatureUnit} onToggle={handleTemperatureToggle} />
@@ -209,7 +209,7 @@ function App() {
 						</div>
 
 						{/* Details Panel */}
-						<div className="w-full lg:w-[60%] bg-neutral-200 rounded-3xl flex flex-col gap-6 p-8 lg:p-10 animate-fade-in">
+						<div className="w-full bg-neutral-200 rounded-3xl flex flex-col gap-6 p-8 lg:p-10 animate-fade-in">
 							{/* Search Section */}
 							<div className="w-full">
 								<SearchBar
