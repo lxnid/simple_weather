@@ -35,9 +35,14 @@ function ForecastPanel({ weatherData }) {
 
 	return (
 		<div className="w-full">
-			<h2 className="text-xl font-bold text-neutral-700 mb-4 animate-slide-down">
-				5-Day Forecast
+			<h2 className="text-xl font-bold text-neutral-700 mb-2 animate-slide-down">
+				{forecastDays.length}-Day Forecast
 			</h2>
+			{forecastDays.length < 5 && (
+				<p className="text-sm text-orange-600 mb-4 font-medium">
+					⚠️ Showing {forecastDays.length} days (API tier limited)
+				</p>
+			)}
 			<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 w-full">
 				{forecastDays.map((dayData, index) => {
 					const date = new Date(dayData.date);
