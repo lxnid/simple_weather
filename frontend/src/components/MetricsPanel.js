@@ -9,14 +9,27 @@ function MetricRow({ label, value }) {
 	);
 }
 
-function MetricsPanel({ weatherData }) {
+function MetricsPanel({ weatherData, unit }) {
+	// Convert wind speed and visibility for imperial units
+	const windValue = unit === 'F'
+		? `${Math.round(weatherData.current.wind_mph)} mph`
+		: `${Math.round(weatherData.current.wind_kph)} km/h`;
+
+	const visibilityValue = unit === 'F'
+		? `${Math.round(weatherData.current.vis_miles)} mi`
+		: `${Math.round(weatherData.current.vis_km)} km`;
+
+	const precipValue = unit === 'F'
+		? `${weatherData.current.precip_in} in`
+		: `${weatherData.current.precip_mm} mm`;
+
 	const metrics = [
 		{ label: "Humidity", value: `${weatherData.current.humidity}%` },
-		{ label: "Precipitation", value: `${weatherData.current.precip_mm} mm` },
-		{ label: "Wind", value: `${weatherData.current.wind_kph} km/h` },
-		{ label: "Pressure", value: `${weatherData.current.pressure_mb} hPa` },
+		{ label: "Precipitation", value: precipValue },
+		{ label: "Wind", value: windValue },
+		{ label: "Pressure", value: `${Math.round(weatherData.current.pressure_mb)} hPa` },
 		{ label: "UV Index", value: weatherData.current.uv },
-		{ label: "Visibility", value: `${weatherData.current.vis_km} km` },
+		{ label: "Visibility", value: visibilityValue },
 	];
 
 	return (

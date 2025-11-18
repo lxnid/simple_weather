@@ -5,30 +5,43 @@ import ErrorDisplay from "./components/ErrorDisplay";
 import SearchBar from "./components/SearchBar";
 import WeatherCard from "./components/WeatherCard";
 import MetricsPanel from "./components/MetricsPanel";
+import TemperatureToggle from "./components/TemperatureToggle";
+import LocationButton from "./components/LocationButton";
+import SearchHistory from "./components/SearchHistory";
+import ForecastCard from "./components/ForecastCard";
+import { getSearchHistory, addToSearchHistory, clearSearchHistory, removeFromSearchHistory } from "./utils/storage";
 
 // Use environment variable or fallback to production URL
 const API_URL = process.env.REACT_APP_API_URL || "https://simple-weather-868c.onrender.com/api";
 
 function App() {
 	const [weatherData, setWeatherData] = useState(null);
+	const [forecastData, setForecastData] = useState(null);
 	const [error, setError] = useState(null);
 	const [location, setLocation] = useState("");
 	const [loading, setLoading] = useState(false);
+	const [temperatureUnit, setTemperatureUnit] = useState('C');
+	const [searchHistory, setSearchHistory] = useState([]);
 
 	// Ref to store the current AbortController
 	const abortControllerRef = useRef(null);
 
 	useEffect(() => {
+		// Load search history from localStorage
+		setSearchHistory(getSearchHistory());
+
 		// Fetch initial weather data with the user's current location
 		async function fetchInitialWeather() {
 			setLoading(true);
 			try {
 				const currentLocation = await getCurrentLocation();
 				await fetchWeatherData(currentLocation);
+				await fetchForecastData(currentLocation);
 			} catch (error) {
 				console.error("Error retrieving current location:", error);
 				// Fallback to a default location if geolocation fails
 				await fetchWeatherData("paris");
+				await fetchForecastData("paris");
 			} finally {
 				setLoading(false);
 			}
@@ -88,7 +101,28 @@ function App() {
 		setLocation(e.target.value);
 	};
 
-	const handleLocationSubmit = (e) => {
+	const fetchForecastData = async (location) => {
+		const url = `${API_URL}/fetch_forecast_data?location=${encodeURIComponent(location)}&days=5`;
+
+		try {
+			const response = await fetch(url, {
+				method: "GET"
+			});
+
+			if (!response.ok) {
+				console.error("Failed to fetch forecast data");
+				return;
+			}
+
+			const data = await response.json();
+			setForecastData(data);
+		} catch (err) {
+			console.error("Error fetching forecast:", err);
+			// Don't show error for forecast - it's optional
+		}
+	};
+
+	const handleLocationSubmit = async (e) => {
 		e.preventDefault();
 
 		// Validate input is not empty
@@ -97,12 +131,50 @@ function App() {
 			return;
 		}
 
-		fetchWeatherData(location);
+		// Add to search history
+		addToSearchHistory(location);
+		setSearchHistory(getSearchHistory());
+
+		await fetchWeatherData(location);
+		await fetchForecastData(location);
 		setLocation("");
 	};
 
-	const handleRetryDefault = () => {
-		fetchWeatherData("paris");
+	const handleHistorySelect = async (query) => {
+		await fetchWeatherData(query);
+		await fetchForecastData(query);
+	};
+
+	const handleHistoryClear = () => {
+		clearSearchHistory();
+		setSearchHistory([]);
+	};
+
+	const handleHistoryRemove = (query) => {
+		removeFromSearchHistory(query);
+		setSearchHistory(getSearchHistory());
+	};
+
+	const handleUseMyLocation = async () => {
+		setLoading(true);
+		try {
+			const currentLocation = await getCurrentLocation();
+			await fetchWeatherData(currentLocation);
+			await fetchForecastData(currentLocation);
+		} catch (error) {
+			setError("Unable to get your location. Please check your browser permissions.");
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const handleRetryDefault = async () => {
+		await fetchWeatherData("paris");
+		await fetchForecastData("paris");
+	};
+
+	const handleTemperatureToggle = (unit) => {
+		setTemperatureUnit(unit);
 	};
 
 	const today = new Date();
@@ -114,20 +186,31 @@ function App() {
 	});
 
 	return (
-		<div className="w-full h-screen flex justify-center items-center bg-white">
-			<div className="lg:w-[70%] w-[90%] lg:h-[80vh] h-[90vh] flex flex-col lg:flex-row justify-center items-center">
+		<div className="w-full min-h-screen flex justify-center items-center bg-gradient-to-br from-blue-50 to-blue-100 py-8">
+			<div className="lg:w-[85%] w-[95%] flex flex-col lg:flex-row justify-center items-start gap-6">
 				{loading && !weatherData ? (
 					<LoadingSpinner />
 				) : error && !weatherData ? (
 					<ErrorDisplay error={error} onRetry={handleRetryDefault} />
 				) : weatherData ? (
 					<>
-						<WeatherCard
-							weatherData={weatherData}
-							dayName={dayName}
-							formattedDate={formattedDate}
-						/>
-						<div className="w-[80%] lg:w-[50%] h-[60%] lg:h-[90%] bg-neutral-300 rounded-b-3xl lg:rounded-e-3xl flex flex-col gap-8 justify-center items-start p-8 lg:p-14 py-12 lg:py-20 animate-fade-in">
+						{/* Weather Card Section */}
+						<div className="w-full lg:w-[40%] flex flex-col gap-4">
+							<div className="flex items-center justify-between">
+								<LocationButton onClick={handleUseMyLocation} loading={loading} />
+								<TemperatureToggle unit={temperatureUnit} onToggle={handleTemperatureToggle} />
+							</div>
+							<WeatherCard
+								weatherData={weatherData}
+								dayName={dayName}
+								formattedDate={formattedDate}
+								unit={temperatureUnit}
+							/>
+						</div>
+
+						{/* Details Panel */}
+						<div className="w-full lg:w-[60%] bg-neutral-200 rounded-3xl flex flex-col gap-6 p-8 lg:p-10 animate-fade-in">
+							{/* Search Section */}
 							<div className="w-full">
 								<SearchBar
 									location={location}
@@ -136,8 +219,21 @@ function App() {
 									error={error}
 									loading={loading}
 								/>
+								<SearchHistory
+									history={searchHistory}
+									onSelect={handleHistorySelect}
+									onClear={handleHistoryClear}
+									onRemove={handleHistoryRemove}
+								/>
 							</div>
-							<MetricsPanel weatherData={weatherData} />
+
+							{/* Metrics Panel */}
+							<MetricsPanel weatherData={weatherData} unit={temperatureUnit} />
+
+							{/* Forecast Section */}
+							{forecastData && (
+								<ForecastCard forecastData={forecastData} unit={temperatureUnit} />
+							)}
 						</div>
 					</>
 				) : null}
