@@ -124,7 +124,6 @@ function App() {
 				) : weatherData ? (
 					<>
 						<div className="flex flex-col gap-6">
-							<div className="w-full bg-neutral-300 rounded-3xl p-8 shadow-lg">
 								<SearchBar
 									location={location}
 									onChange={handleLocationChange}
@@ -132,7 +131,6 @@ function App() {
 									error={error}
 									loading={loading}
 								/>
-							</div>
 
 							<div className="w-full">
 								<WeatherCard
@@ -142,11 +140,11 @@ function App() {
 								/>
 							</div>
 
-							<div className="w-full bg-neutral-300 rounded-3xl p-8 shadow-lg">
+							<div className="w-full bg-neutral-200 rounded-3xl p-8 shadow-lg">
 								<MetricsPanel weatherData={weatherData} />
 							</div>
 
-							<div className="w-full bg-neutral-300 rounded-3xl p-8 shadow-lg">
+							<div className="w-full bg-neutral-200 rounded-3xl p-8 shadow-lg">
 								<ForecastPanel weatherData={weatherData} />
 							</div>
 						</div>

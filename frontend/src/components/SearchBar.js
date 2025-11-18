@@ -11,7 +11,7 @@ function SearchBar({ location, onChange, onSubmit, error, loading }) {
 					value={location}
 					onChange={onChange}
 					aria-label="Search for a location"
-					className="p-3 pr-12 border border-gray-300 font-medium text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg w-full transition-all ease-in-out duration-300"
+					className="p-3 pr-12 border border-gray-300 bg-neutral-100 font-medium text-sm placeholder-gray-400 focus:outline-none focus:ring-neutral-500 rounded-lg w-full"
 				/>
 				<button
 					type="submit"
@@ -28,7 +28,7 @@ function SearchBar({ location, onChange, onSubmit, error, loading }) {
 				</div>
 			)}
 			{loading && (
-				<div className="mt-2 text-blue-600 text-sm font-medium animate-fade-in">
+				<div className="mt-2 text-neutral-600 text-sm font-medium animate-fade-in">
 					Loading...
 				</div>
 			)}
