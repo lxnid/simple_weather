@@ -10,6 +10,11 @@ export default function getCurrentLocation() {
 				(error) => {
 					console.error("Error getting location:", error);
 					reject("Unable to retrieve location");
+				},
+				{
+					timeout: 10000, // 10 second timeout
+					enableHighAccuracy: false,
+					maximumAge: 300000 // Cache position for 5 minutes
 				}
 			);
 		} else {
@@ -17,4 +22,4 @@ export default function getCurrentLocation() {
 			reject("Geolocation not supported");
 		}
 	});
-};
+}
