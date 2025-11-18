@@ -116,7 +116,7 @@ async def fetch_weather_data(location: str = "paris"):
         raise HTTPException(status_code=500, detail="Weather API key not configured")
 
     URL = "https://api.weatherapi.com/v1/forecast.json"
-    params = {"key": WEATHERAPI_KEY, "q": temp_location, "days": 5}
+    params = {"key": WEATHERAPI_KEY, "q": temp_location, "days": 5, "aqi": "no"}
 
     try:
         async with httpx.AsyncClient() as client:
@@ -158,3 +158,32 @@ async def clear_cache():
     """Clear the weather cache (for debugging/admin use)"""
     weather_cache.clear()
     return {"status": "cache cleared", "message": "Weather cache has been cleared successfully"}
+
+
+@app.get("/api/debug/forecast")
+async def debug_forecast(location: str = "london"):
+    """Debug endpoint to check forecast data structure"""
+    url = "https://api.weatherapi.com/v1/forecast.json"
+    params = {"key": WEATHERAPI_KEY, "q": location, "days": 5, "aqi": "no"}
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, params=params, timeout=10.0)
+            response.raise_for_status()
+            data = response.json()
+
+            if "forecast" in data:
+                days_count = len(data["forecast"].get("forecastday", []))
+                return {
+                    "location": data.get("location", {}).get("name"),
+                    "forecast_days_count": days_count,
+                    "forecast_days": [d.get("date") for d in data["forecast"].get("forecastday", [])],
+                    "raw_forecast_structure": {
+                        "has_forecast": "forecast" in data,
+                        "has_forecastday": "forecastday" in data.get("forecast", {}),
+                        "forecastday_type": type(data.get("forecast", {}).get("forecastday")).__name__
+                    }
+                }
+            return {"error": "No forecast in response", "data_keys": list(data.keys())}
+    except Exception as e:
+        return {"error": str(e)}
