@@ -1,9 +1,11 @@
 import json
-import requests
+import httpx
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
+from datetime import datetime, timedelta
+from cachetools import TTLCache
 
 # Load environment variables once at startup
 load_dotenv()
@@ -11,6 +13,9 @@ POSITIONSTACK_API_KEY = os.getenv("POSITIONSTACK_API_KEY")
 WEATHERAPI_KEY = os.getenv("WEATHERAPI_KEY")
 
 app = FastAPI()
+
+# Initialize cache with 10-minute TTL, max 100 entries
+weather_cache = TTLCache(maxsize=100, ttl=600)  # 10 minutes
 
 # Enable CORS for requests from React app
 app.add_middleware(
@@ -26,7 +31,7 @@ app.add_middleware(
 )
 
 
-def get_location(location):
+async def get_location(location: str):
     """
     Reverse geocode coordinates to city/country using PositionStack API.
 
@@ -50,22 +55,25 @@ def get_location(location):
     }
 
     try:
-        response = requests.get(URL, params=params, timeout=10)
-        response.raise_for_status()
-        json_data = response.json()
+        async with httpx.AsyncClient() as client:
+            response = await client.get(URL, params=params, timeout=10.0)
+            response.raise_for_status()
+            json_data = response.json()
 
-        if "data" in json_data and json_data["data"] and len(json_data["data"]) > 0:
-            region = json_data["data"][0].get("region", "Unknown")
-            country = json_data["data"][0].get("country", "Unknown")
-            return f"{region}, {country}"
-        else:
-            raise HTTPException(
-                status_code=404,
-                detail="Location not found. Please check your coordinates."
-            )
-    except requests.exceptions.Timeout:
+            if "data" in json_data and json_data["data"] and len(json_data["data"]) > 0:
+                region = json_data["data"][0].get("region", "Unknown")
+                country = json_data["data"][0].get("country", "Unknown")
+                return f"{region}, {country}"
+            else:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Location not found. Please check your coordinates."
+                )
+    except httpx.TimeoutException:
         raise HTTPException(status_code=504, detail="Request to location service timed out")
-    except requests.exceptions.RequestException as e:
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=f"Location service error: {str(e)}")
+    except httpx.RequestError as e:
         raise HTTPException(status_code=500, detail=f"Error fetching location data: {str(e)}")
 
 
@@ -93,9 +101,14 @@ async def fetch_weather_data(location: str = "paris"):
     if len(location) > 200:
         raise HTTPException(status_code=400, detail="Location parameter too long")
 
+    # Check cache first
+    cache_key = location.lower()
+    if cache_key in weather_cache:
+        return weather_cache[cache_key]
+
     # Handle coordinate format or city name
     if "%:%" in location:
-        temp_location = get_location(location)
+        temp_location = await get_location(location)
     else:
         temp_location = location
 
@@ -106,19 +119,25 @@ async def fetch_weather_data(location: str = "paris"):
     params = {"key": WEATHERAPI_KEY, "q": temp_location}
 
     try:
-        response = requests.get(URL, params=params, timeout=10)
-        response.raise_for_status()
-        data = response.json()
+        async with httpx.AsyncClient() as client:
+            response = await client.get(URL, params=params, timeout=10.0)
+            response.raise_for_status()
+            data = response.json()
 
-        # Check if API returned an error
-        if "error" in data:
-            error_msg = data["error"].get("message", "Unknown error from weather API")
-            raise HTTPException(status_code=400, detail=error_msg)
+            # Check if API returned an error
+            if "error" in data:
+                error_msg = data["error"].get("message", "Unknown error from weather API")
+                raise HTTPException(status_code=400, detail=error_msg)
 
-        return data
-    except requests.exceptions.Timeout:
+            # Cache the successful response
+            weather_cache[cache_key] = data
+
+            return data
+    except httpx.TimeoutException:
         raise HTTPException(status_code=504, detail="Request to weather service timed out")
-    except requests.exceptions.RequestException as e:
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=f"Weather service error: {str(e)}")
+    except httpx.RequestError as e:
         raise HTTPException(status_code=500, detail=f"Error fetching weather data: {str(e)}")
 
 
@@ -128,5 +147,14 @@ async def health_check():
     return {
         "status": "healthy",
         "positionstack_configured": bool(POSITIONSTACK_API_KEY),
-        "weatherapi_configured": bool(WEATHERAPI_KEY)
+        "weatherapi_configured": bool(WEATHERAPI_KEY),
+        "cache_size": len(weather_cache),
+        "cache_max": weather_cache.maxsize
     }
+
+
+@app.get("/api/cache/clear")
+async def clear_cache():
+    """Clear the weather cache (for debugging/admin use)"""
+    weather_cache.clear()
+    return {"status": "cache cleared", "message": "Weather cache has been cleared successfully"}

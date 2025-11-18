@@ -1,4 +1,5 @@
 fastapi
-requests
+httpx
 uvicorn
-dotenv
+python-dotenv
+cachetools
