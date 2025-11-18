@@ -115,8 +115,8 @@ async def fetch_weather_data(location: str = "paris"):
     if not WEATHERAPI_KEY:
         raise HTTPException(status_code=500, detail="Weather API key not configured")
 
-    URL = "https://api.weatherapi.com/v1/current.json"
-    params = {"key": WEATHERAPI_KEY, "q": temp_location}
+    URL = "https://api.weatherapi.com/v1/forecast.json"
+    params = {"key": WEATHERAPI_KEY, "q": temp_location, "days": 5}
 
     try:
         async with httpx.AsyncClient() as client:

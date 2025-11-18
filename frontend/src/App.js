@@ -5,6 +5,7 @@ import ErrorDisplay from "./components/ErrorDisplay";
 import SearchBar from "./components/SearchBar";
 import WeatherCard from "./components/WeatherCard";
 import MetricsPanel from "./components/MetricsPanel";
+import ForecastPanel from "./components/ForecastPanel";
 
 // Use environment variable or fallback to production URL
 const API_URL = process.env.REACT_APP_API_URL || "https://simple-weather-868c.onrender.com/api";
@@ -114,21 +115,16 @@ function App() {
 	});
 
 	return (
-		<div className="w-full h-screen flex justify-center items-center bg-white">
-			<div className="lg:w-[70%] w-[90%] lg:h-[80vh] h-[90vh] flex flex-col lg:flex-row justify-center items-center">
+		<div className="w-full min-h-screen flex justify-center items-center bg-white py-8">
+			<div className="w-[90%] max-w-4xl flex flex-col gap-8 animate-fade-in">
 				{loading && !weatherData ? (
 					<LoadingSpinner />
 				) : error && !weatherData ? (
 					<ErrorDisplay error={error} onRetry={handleRetryDefault} />
 				) : weatherData ? (
 					<>
-						<WeatherCard
-							weatherData={weatherData}
-							dayName={dayName}
-							formattedDate={formattedDate}
-						/>
-						<div className="w-[80%] lg:w-[50%] h-[60%] lg:h-[90%] bg-neutral-300 rounded-b-3xl lg:rounded-e-3xl flex flex-col gap-8 justify-center items-start p-8 lg:p-14 py-12 lg:py-20 animate-fade-in">
-							<div className="w-full">
+						<div className="flex flex-col gap-6">
+							<div className="w-full bg-neutral-300 rounded-3xl p-8 shadow-lg">
 								<SearchBar
 									location={location}
 									onChange={handleLocationChange}
@@ -137,7 +133,22 @@ function App() {
 									loading={loading}
 								/>
 							</div>
-							<MetricsPanel weatherData={weatherData} />
+
+							<div className="w-full">
+								<WeatherCard
+									weatherData={weatherData}
+									dayName={dayName}
+									formattedDate={formattedDate}
+								/>
+							</div>
+
+							<div className="w-full bg-neutral-300 rounded-3xl p-8 shadow-lg">
+								<MetricsPanel weatherData={weatherData} />
+							</div>
+
+							<div className="w-full bg-neutral-300 rounded-3xl p-8 shadow-lg">
+								<ForecastPanel weatherData={weatherData} />
+							</div>
 						</div>
 					</>
 				) : null}
